@@ -1,0 +1,84 @@
+Certainly! Below is a simplified example of how you might structure the code for adding a customer in the Customer microservice, which then triggers the creation of a default savings account in a separate Savings microservice using Spring Boot and Spring Cloud.
+
+Customer Microservice:
+
+java
+Copy code
+@RestController
+@RequestMapping("/api/customers")
+public class CustomerController {
+
+    @Autowired
+    private CustomerService customerService;
+
+    @PostMapping("/add")
+    public ResponseEntity<String> addCustomer(@RequestBody Customer customer) {
+        // Add customer logic
+        customerService.addCustomer(customer);
+
+        // Call Savings microservice to create default savings account
+        String savingsAccountId = customerService.createDefaultSavingsAccount(customer.getId());
+
+        return ResponseEntity.ok("Customer added successfully with Savings Account ID: " + savingsAccountId);
+    }
+}
+java
+Copy code
+@Service
+public class CustomerService {
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @Value("${savings.microservice.url}")
+    private String savingsMicroserviceUrl;
+
+    // Add customer logic
+    public void addCustomer(Customer customer) {
+        // Your implementation
+    }
+
+    // Call Savings microservice to create default savings account
+    public String createDefaultSavingsAccount(String customerId) {
+        // Your implementation to communicate with Savings microservice
+        // You might use restTemplate.postForObject or similar methods
+        
+        // Example:
+        // SavingsAccount savingsAccount = restTemplate.postForObject(savingsMicroserviceUrl + "/api/savings/create", customerId, SavingsAccount.class);
+        
+        // Assume savingsAccount has an ID field
+        // return savingsAccount.getId();
+        
+        return "GeneratedSavingsAccountId";
+    }
+}
+Savings Microservice:
+
+java
+Copy code
+@RestController
+@RequestMapping("/api/savings")
+public class SavingsController {
+
+    @Autowired
+    private SavingsService savingsService;
+
+    @PostMapping("/create")
+    public ResponseEntity<SavingsAccount> createDefaultSavingsAccount(@RequestBody String customerId) {
+        SavingsAccount savingsAccount = savingsService.createDefaultSavingsAccount(customerId);
+        return ResponseEntity.ok(savingsAccount);
+    }
+}
+java
+Copy code
+@Service
+public class SavingsService {
+
+    // Your implementation to create a default savings account
+    public SavingsAccount createDefaultSavingsAccount(String customerId) {
+        // Your logic to generate a savings account and associate it with the customer
+        // Return the SavingsAccount object
+        return new SavingsAccount("GeneratedSavingsAccountId", customerId);
+    }
+}
+Make sure to configure the communication between microservices using Spring Cloud, such as using Eureka for service discovery and Feign for declarative REST clients. Also, customize the code based on your specific requirements and domain model.
